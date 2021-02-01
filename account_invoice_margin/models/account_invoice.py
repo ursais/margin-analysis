@@ -81,28 +81,20 @@ class AccountMoveLine(models.Model):
     @api.depends("purchase_price", "price_subtotal")
     def _compute_margin(self):
         for line in self:
-            if (
-                line.move_id
-                and line.move_id.type[:2] == "in"
-                or any(line.sale_line_ids.mapped("is_downpayment"))
-            ):
+            if line.move_id and line.move_id.type[:2] == "in":
+                tmp_margin = line.price_subtotal - (line.purchase_price * line.quantity)
+                sign = line.move_id.type in ["in_refund", "out_refund"] and -1 or 1
                 line.update(
-                    {"margin": 0.0, "margin_signed": 0.0, "margin_percent": 0.0}
+                    {
+                        "margin": tmp_margin,
+                        "margin_signed": tmp_margin * sign,
+                        "margin_percent": (
+                            tmp_margin / line.price_subtotal * 100.0
+                            if line.price_subtotal
+                            else 0.0
+                        ),
+                    }
                 )
-                continue
-            tmp_margin = line.price_subtotal - (line.purchase_price * line.quantity)
-            sign = line.move_id.type in ["in_refund", "out_refund"] and -1 or 1
-            line.update(
-                {
-                    "margin": tmp_margin,
-                    "margin_signed": tmp_margin * sign,
-                    "margin_percent": (
-                        tmp_margin / line.price_subtotal * 100.0
-                        if line.price_subtotal
-                        else 0.0
-                    ),
-                }
-            )
 
     def _get_purchase_price(self):
         # Overwrite this function if you don't want to base your
