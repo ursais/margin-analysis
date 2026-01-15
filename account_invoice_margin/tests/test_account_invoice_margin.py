@@ -17,14 +17,18 @@ class TestAccountInvoiceMargin(AccountTestInvoicingCommon):
         # cls.env.user.group_ids |= cls.env.ref(
         #     "product_cost_security.group_product_cost"
         # )
-        group_edit = cls.env.ref("product_cost_security.group_product_edit_cost", raise_if_not_found=False)
-        group_view = cls.env.ref("product_cost_security.group_product_cost", raise_if_not_found=False)
+        group_edit = cls.env.ref(
+            "product_cost_security.group_product_edit_cost", raise_if_not_found=False
+        )
+        group_view = cls.env.ref(
+            "product_cost_security.group_product_cost", raise_if_not_found=False
+        )
 
         if group_edit:
             cls.env.user.group_ids |= group_edit
         if group_view:
             cls.env.user.group_ids |= group_view
-        
+
         cls.product_a.lst_price = 200
         cls.product_a.standard_price = 100
         cls.invoice = cls.init_invoice(
